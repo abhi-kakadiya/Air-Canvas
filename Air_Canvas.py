@@ -58,6 +58,24 @@ soundStartTime_selection = 0
 soundDuration_selection = 0
 dict = {1:1,2:1,3:1,4:1,5:1}
 
+total_Fingers = 0
+x1,y1,x2,y2 = 0,0,0,0
+
+def initializeSoundAttributes():
+	global soundStarted_eraser,soundStarted_eraser,soundStarted_selection,soundDuration_drawing,soundDuration_eraser,soundDuration_selection,drawingSound,eraserSound,selectingSound
+
+	if not soundStarted_drawing:
+		soundDuration_drawing = drawingSound.get_length()
+		soundStarted_drawing = True
+
+	if not soundStarted_eraser:
+		soundDuration_eraser = eraserSound.get_length()
+		soundStarted_eraser = True
+	
+	if not soundStarted_selection:
+		soundDuration_selection = selectingSound.get_length()
+		soundStarted_selection = True
+
 def time_elapsed(i):
 	global soundStartTime_selection
 	timeElapsed = time.time() - soundStartTime_selection
@@ -72,39 +90,22 @@ def time_elapsed(i):
 				dict[j] = 1
 		soundStartTime_selection = 0
 
-
-while True:
-
-	if not soundStarted_drawing:
-		soundDuration_drawing = drawingSound.get_length()
-		soundStarted_drawing = True
-
-	if not soundStarted_eraser:
-		soundDuration_eraser = eraserSound.get_length()
-		soundStarted_eraser = True
-	
-	if not soundStarted_selection:
-		soundDuration_selection = selectingSound.get_length()
-		soundStarted_selection = True
-
-	# IMAGE IMPORTED AND RESIZED
-	_,img = cap.read()
-	img = cv2.resize(img, (640, 480))
-	img = cv2.flip(img,1)
-	
-	# FIND HAND LANDMARKS
+def findLandmarks(img):
+	global total_Fingers,x1,y1,x2,y2
 	img = handTracker.HandDetection(img)
 	landMarkList = handTracker.findPosition(img,False)
 	if len(landMarkList) != 0 :
 
 		# INDEX FINGER
 		x1,y1 = landMarkList[8][1:]
-		
 		# MIDDLE FINGER
 		x2,y2 = landMarkList[12][1:]
 
 	total_Fingers = handTracker.fingers_Fisted_Splayed()
+	return total_Fingers,x1,y1,x2,y2
 
+def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
+	global displayImage,drawColor,canvas,canvas_weight,img_weight,drawingSound,eraserSound,selectingSound,X_Y_Points,xStart,yStart,soundStartTime_drawing,soundStartTime_eraser
 	if len(total_Fingers) != 0:			
 
 		# SELECTION MODE
@@ -219,11 +220,26 @@ while True:
 			yStart = y1
 		
 		displayImage = cv2.resize(displayImage, (640, 60))
-	
 	else:
 		eraserSound.stop()
 		drawingSound.stop()
 		selectingSound.stop()
+
+	return displayImage
+
+
+# Main loop
+while True:
+
+
+	# IMAGE IMPORTED AND RESIZED
+	_,img = cap.read()
+	img = cv2.resize(img, (640, 480))
+	img = cv2.flip(img,1)
+	
+	# FIND HAND LANDMARKS
+	total_Fingers,x1,y1,x2,y2 = findLandmarks(img)
+	displayImage = selectAndDraw(img,total_Fingers,x1,y1,x2,y2)
 
 	# FIRST IMAGE TO BE DISPLAYED IS APPLIED
 	img[:60,0:640] = displayImage

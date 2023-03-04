@@ -5,6 +5,7 @@ import os
 import pygame
 import trackingModule as tm
 
+
 folderPath = 'Images'
 list_Images = os.listdir(folderPath)
 print(list_Images)
@@ -36,11 +37,6 @@ drawColor = (0, 0, 0)
 list1 = []
 xStart,yStart = 0,0
 
-# x1Prev = 0
-# y1Prev = 0
-# x2Prev = 0
-# y2Prev = 0
-
 canvas = np.ones((480,640,3),np.uint8)
 canvas[:,:] = canvas[:,:] * 255
 
@@ -61,6 +57,21 @@ soundStarted_selection = False
 soundStartTime_selection = 0
 soundDuration_selection = 0
 dict = {1:1,2:1,3:1,4:1,5:1}
+
+def time_elapsed(i):
+	global soundStartTime_selection
+	timeElapsed = time.time() - soundStartTime_selection
+	soundStartTime_selection = time.time()
+	if int(timeElapsed) != 0 and dict[i]:
+		selectingSound.play()
+	else:
+		for j in dict.keys():
+			if i==j:
+				dict[j] = 0
+			else:
+				dict[j] = 1
+		soundStartTime_selection = 0
+
 
 while True:
 
@@ -93,9 +104,6 @@ while True:
 		x2,y2 = landMarkList[12][1:]
 
 	total_Fingers = handTracker.fingers_Fisted_Splayed()
-	# print(total_Fingers)
-	
-	
 
 	if len(total_Fingers) != 0:			
 
@@ -112,89 +120,34 @@ while True:
 			if y2 < 60:
 				
 				if 200< ((x1+x2)//2) <288:
+					i = 1
 					displayImage = imagesArray[1]
 					drawColor = (32, 66, 235)
-
-					timeElapsed = time.time() - soundStartTime_selection
-					soundStartTime_selection = time.time()
-					if int(timeElapsed) != 0 and dict[1]:
-						selectingSound.play()
-					else:
-						dict[1] = 0
-						dict[2] = 1
-						dict[3] = 1
-						dict[4] = 1
-						dict[5] = 1
-						soundStartTime_selection = 0
-					
+					time_elapsed(i)
 
 				elif 288< ((x1+x2)//2) <376:
+					i = 2
 					displayImage = imagesArray[4]
 					drawColor = (255, 102, 196)
-
-					timeElapsed = time.time() - soundStartTime_selection
-					soundStartTime_selection = time.time()
-					if int(timeElapsed) != 0 and dict[2]:
-						selectingSound.play()
-					else:
-						dict[1] = 1
-						dict[2] = 0
-						dict[3] = 1
-						dict[4] = 1
-						dict[5] = 1
-						soundStartTime_selection = 0
-					
-
+					time_elapsed(i)
 
 				elif 376< ((x1+x2)//2) <464:
+					i = 3
 					displayImage = imagesArray[3]
 					drawColor = (126, 217, 87)
-
-					timeElapsed = time.time() - soundStartTime_selection
-					soundStartTime_selection = time.time()
-					if int(timeElapsed) != 0 and dict[3]:
-						selectingSound.play()
-					else:
-						dict[1] = 1
-						dict[2] = 1
-						dict[3] = 0
-						dict[4] = 1
-						dict[5] = 1
-						soundStartTime_selection = 0
-					
+					time_elapsed(i)
 
 				elif 464< ((x1+x2)//2) <552:
+					i = 4
 					displayImage = imagesArray[5]
 					drawColor = (255, 222, 89)
-
-					timeElapsed = time.time() - soundStartTime_selection
-					soundStartTime_selection = time.time()
-					if int(timeElapsed) != 0 and dict[4]:
-						selectingSound.play()
-					else:
-						dict[1] = 1
-						dict[2] = 1
-						dict[3] = 1
-						dict[4] = 0
-						dict[5] = 1
-						soundStartTime_selection = 0
-					
+					time_elapsed(i)
 
 				elif 552< ((x1+x2)//2) <640:
+					i = 5
 					displayImage = imagesArray[2]
 					drawColor = (255,255,255)
-
-					timeElapsed = time.time() - soundStartTime_selection
-					soundStartTime_selection = time.time()
-					if int(timeElapsed) != 0 and dict[5]:
-						selectingSound.play()
-					else:
-						dict[1] = 1
-						dict[2] = 1
-						dict[3] = 1
-						dict[4] = 1
-						dict[5] = 0
-						soundStartTime_selection = 0
+					time_elapsed(i)
 
 			else:
 				displayImage = imagesArray[0]

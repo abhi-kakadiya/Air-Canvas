@@ -10,7 +10,7 @@ class handDetector:
         self.mpDraw = mp.solutions.drawing_utils
 
         self.hand = self.mpHands.Hands(
-            False, max_num_hands=2, min_tracking_confidence=0.5, min_detection_confidence=0.85)
+            False, max_num_hands=1, min_tracking_confidence=0.5, min_detection_confidence=0.85)
 
     def HandDetection(self, img, draw=True):
         """ TO DETECT HAND IN WINDOW AND DRAW LANDMARKS ON IT """

@@ -26,8 +26,8 @@ for imgPath in list_Images:
 	imagesArray.append(img)
 	
 cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
 cap.set(cv2.CAP_PROP_FPS, 60)
 
 # DEFAULT COLOR IS BLACK
@@ -56,13 +56,16 @@ soundDuration_eraser = 0
 soundStarted_selection = False
 soundStartTime_selection = 0
 soundDuration_selection = 0
-dict = {1:1,2:1,3:1,4:1,5:1}
+
+dict = {}
+for i in range(1,len(imagesArray)+1):
+	dict[i] = 1
 
 total_Fingers = 0
 x1,y1,x2,y2 = 0,0,0,0
 
 def initializeSoundAttributes():
-	global soundStarted_eraser,soundStarted_eraser,soundStarted_selection,soundDuration_drawing,soundDuration_eraser,soundDuration_selection,drawingSound,eraserSound,selectingSound
+	global soundStarted_drawing,soundStarted_eraser,soundStarted_selection,soundDuration_drawing,soundDuration_eraser,soundDuration_selection,drawingSound,eraserSound,selectingSound
 
 	if not soundStarted_drawing:
 		soundDuration_drawing = drawingSound.get_length()
@@ -105,7 +108,7 @@ def findLandmarks(img):
 	return total_Fingers,x1,y1,x2,y2
 
 def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
-	global displayImage,drawColor,canvas,canvas_weight,img_weight,drawingSound,eraserSound,selectingSound,X_Y_Points,xStart,yStart,soundStartTime_drawing,soundStartTime_eraser
+	global displayImage,drawColor,canvas,canvas_weight,img_weight,drawingSound,eraserSound,selectingSound,X_Y_Points,xStart,yStart,soundStartTime_drawing,soundStartTime_eraser,soundDuration_drawing,soundDuration_eraser,soundDuration_selection
 	if len(total_Fingers) != 0:			
 
 		# SELECTION MODE
@@ -120,33 +123,51 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 			# SELECT DIFFERENT CRAYONS
 			if y2 < 60:
 				
-				if 200< ((x1+x2)//2) <288:
+				if 0< ((x1+x2)//2) <80:
 					i = 1
 					displayImage = imagesArray[1]
-					drawColor = (32, 66, 235)
+					drawColor = (-1, -1, -1)
 					time_elapsed(i)
 
-				elif 288< ((x1+x2)//2) <376:
+				elif 80< ((x1+x2)//2) <160:
 					i = 2
-					displayImage = imagesArray[4]
-					drawColor = (255, 102, 196)
+					displayImage = imagesArray[2]
+					drawColor = (0, 0, 255)
 					time_elapsed(i)
 
-				elif 376< ((x1+x2)//2) <464:
+				elif 160< ((x1+x2)//2) <240:
 					i = 3
 					displayImage = imagesArray[3]
-					drawColor = (126, 217, 87)
+					drawColor = (0, 127, 255)
 					time_elapsed(i)
 
-				elif 464< ((x1+x2)//2) <552:
+				elif 240< ((x1+x2)//2) <320:
 					i = 4
-					displayImage = imagesArray[5]
-					drawColor = (255, 222, 89)
+					displayImage = imagesArray[4]
+					drawColor = (0, 255, 255)
 					time_elapsed(i)
 
-				elif 552< ((x1+x2)//2) <640:
+				elif 320< ((x1+x2)//2) <400:
 					i = 5
-					displayImage = imagesArray[2]
+					displayImage = imagesArray[5]
+					drawColor = (0, 255, 0)
+					time_elapsed(i)
+
+				elif 400< ((x1+x2)//2) <480:
+					i = 6
+					displayImage = imagesArray[6]
+					drawColor = (255, 0, 0)
+					time_elapsed(i)
+
+				elif 480< ((x1+x2)//2) <560:
+					i = 7
+					displayImage = imagesArray[7]
+					drawColor = (0,0,0)
+					time_elapsed(i)
+
+				elif 560< ((x1+x2)//2) <640:
+					i = 8
+					displayImage = imagesArray[8]
 					drawColor = (255,255,255)
 					time_elapsed(i)
 
@@ -175,45 +196,47 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 					# print(X_Y_Points)
 					X_Y_Points.append([x1,y1])
 			
-			cv2.circle(img,radius=20,center=(x1,y1),color=(0,0,0),thickness=-1)		
+			cv2.circle(img,radius=10,center=(x1,y1),color=(0,0,0),thickness=-1)		
 			
 			# BY DEFAULT IT WILL NOT START DRAWING AT THE STARTING INDEX OF X AND Y --> (0,0)
 			if xStart == 0 and yStart == 0:
 				xStart = x1 
 				yStart = y1 
 			
-			
-			if drawColor == (255,255,255):
-				thickness = 40
-				cv2.line(canvas,(xStart,yStart),(x1,y1),color=drawColor,thickness=thickness)
+			if drawColor != (-1,-1,-1):
+				if drawColor == (255,255,255):
+					thickness = 30
+					cv2.line(canvas,(xStart,yStart),(x1,y1),color=drawColor,thickness=thickness)
 
-				if not pygame.mixer.get_busy():
-					soundStartTime_eraser = time.time()
-					eraserSound.play()
-				else:
-					timeElapsed = time.time() - soundStartTime_eraser
-					if timeElapsed > soundDuration_eraser:
-						eraserSound.stop()
-						eraserSound.play()
+					if not pygame.mixer.get_busy():
 						soundStartTime_eraser = time.time()
+						eraserSound.play()
+					else:
+						timeElapsed = time.time() - soundStartTime_eraser
+						if timeElapsed > soundDuration_eraser:
+							eraserSound.stop()
+							eraserSound.play()
+							soundStartTime_eraser = time.time()
 
-			
-			elif drawColor != (0, 0, 0):
-				# cv2.line(canvas,(xStart,yStart),(x1,y1),color=drawColor,thickness=10)
-				points = np.array(X_Y_Points)			
-				cv2.polylines(canvas, [points], False, drawColor, thickness = 7)	
-			
-				if not pygame.mixer.get_busy():
-					soundStartTime_drawing = time.time()
-					drawingSound.play()
-				else:
-					timeElapsed = time.time() - soundStartTime_drawing
-					if timeElapsed > soundDuration_drawing:
-						drawingSound.stop()
-						drawingSound.play()
+				
+				elif drawColor != (255, 255, 255):
+					points = np.array(X_Y_Points)			
+					cv2.polylines(canvas, [points], False, drawColor, thickness = 5)	
+				
+					if not pygame.mixer.get_busy():
 						soundStartTime_drawing = time.time()
-		
-			print('DRAWING MODE')
+						drawingSound.play()
+					else:
+						timeElapsed = time.time() - soundStartTime_drawing
+						if timeElapsed > soundDuration_drawing:
+							drawingSound.stop()
+							drawingSound.play()
+							soundStartTime_drawing = time.time()
+			
+				print('DRAWING MODE')
+
+			else:
+				canvas[:] = (255,255,255)
 
 			# NOW OUR NEW POINTS WILL PREVIOUS POINTS
 			xStart = x1
@@ -224,10 +247,11 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 		eraserSound.stop()
 		drawingSound.stop()
 		selectingSound.stop()
+		
 
 	return displayImage
 
-
+initializeSoundAttributes()
 # Main loop
 while True:
 
@@ -247,7 +271,7 @@ while True:
 	img[60:,0:640] = blended
 	cv2.imshow('Canvas', img)
 
-	if cv2.waitKey(1) & 0xFF == 27:
+	if cv2.waitKey(1) & 0xFF == 32:
 		break
 
 pygame.mixer.music.stop()

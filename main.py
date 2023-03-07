@@ -8,7 +8,6 @@ import trackingModule as tm
 
 folderPath = 'Images'
 list_Images = os.listdir(folderPath)
-print(list_Images)
 
 img_weight = 0.1
 canvas_weight = 0.9
@@ -270,7 +269,6 @@ while True:
 	blended = cv2.addWeighted(img[60:,0:640],img_weight, canvas[60:,0:640], canvas_weight, 0)
 	img[60:,0:640] = blended
 	cv2.imshow('Canvas', img)
-	cv2.imshow('Canvas', canvas)
 
 	if cv2.waitKey(1) & 0xFF == 32:
 		break

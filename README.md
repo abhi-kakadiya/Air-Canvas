@@ -1,6 +1,6 @@
 
 # Air Canvas
-
+![Picture1](https://user-images.githubusercontent.com/68434582/224140757-e495c9c2-cc99-4f98-af3a-0b2e75eb4ee4.png)
 Air Canvas is an interactive computer vision project that allows users to draw in the air using just their fingers. This project uses a webcam to capture the user's hand movements and track their position in real-time. The user can then draw on the screen by moving their finger in the air, and the drawing will appear on the screen.
 
 ## Installation

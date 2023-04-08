@@ -3,8 +3,13 @@ import time
 import numpy as np
 import os
 import pygame
+import streamlit as st
 import trackingModule as tm
+from random_word import RandomWords
+from PIL import Image
 
+st.title("Air Canvas")
+FRAME_WINDOW = st.image([])
 
 folderPath = 'Images'
 list_Images = os.listdir(folderPath)
@@ -251,27 +256,39 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 	return displayImage
 
 initializeSoundAttributes()
+button_bool = st.button("PAUSE WEB-CAM")
 # Main loop
 while True:
+	if (button_bool) == False:
+		# IMAGE IMPORTED AND RESIZED
+		_,img = cap.read()
+		img = cv2.resize(img, (640, 480)) 
+		img = cv2.flip(img,1)
+		
+		# FIND HAND LANDMARKS
+		total_Fingers,x1,y1,x2,y2 = findLandmarks(img)
+		displayImage = selectAndDraw(img,total_Fingers,x1,y1,x2,y2)
 
+		# FIRST IMAGE TO BE DISPLAYED IS APPLIED
+		img[:60,0:640] = displayImage
+		blended = cv2.addWeighted(img[60:,0:640],img_weight, canvas[60:,0:640], canvas_weight, 10)
+		img[60:,0:640] = blended
+		img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+		FRAME_WINDOW.image(img)
 
-	# IMAGE IMPORTED AND RESIZED
-	_,img = cap.read()
-	img = cv2.resize(img, (640, 480))
-	img = cv2.flip(img,1)
-	
-	# FIND HAND LANDMARKS
-	total_Fingers,x1,y1,x2,y2 = findLandmarks(img)
-	displayImage = selectAndDraw(img,total_Fingers,x1,y1,x2,y2)
+		# if cv2.waitKey(1) & 0xFF == 32:
+		# 	break
 
-	# FIRST IMAGE TO BE DISPLAYED IS APPLIED
-	img[:60,0:640] = displayImage
-	blended = cv2.addWeighted(img[60:,0:640],img_weight, canvas[60:,0:640], canvas_weight, 10)
-	img[60:,0:640] = blended
-	cv2.imshow('Canvas', img)
-
-	if cv2.waitKey(1) & 0xFF == 32:
+	else:
+		with st.spinner('Wait for it...'):
+			st.success('Done!')
+		folderPath = 'Web Static'
+		landscape_img = 'Background.jpg'
+		st.image(f"{folderPath}/{landscape_img}")
+		st.header("_Web_ _Cam_ :red[stopped] :sunflower:")
+		button_bool = False
 		break
+
 
 pygame.mixer.music.stop()
 cv2.destroyAllWindows()

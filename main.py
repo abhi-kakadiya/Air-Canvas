@@ -5,8 +5,6 @@ import os
 import pygame
 import streamlit as st
 import trackingModule as tm
-from random_word import RandomWords
-from PIL import Image
 
 st.title("Air Canvas")
 FRAME_WINDOW = st.image([])
@@ -44,6 +42,13 @@ xStart,yStart = 0,0
 canvas = np.ones((480,640,3),np.uint8)
 canvas[:,:] = canvas[:,:] * 255
 
+start_point = (5,220)
+end_point = (130,260)
+
+black_tile = np.ones((40,60,3),np.uint8)
+black_tile[:,:] = black_tile[:,:] * 0
+
+
 displayImage = imagesArray[0]
 displayImage = cv2.resize(displayImage, (640, 60))
 
@@ -60,6 +65,15 @@ soundDuration_eraser = 0
 soundStarted_selection = False
 soundStartTime_selection = 0
 soundDuration_selection = 0
+
+words_Array = ["Apple","Orange","Ball","Sun","Flower","Hut","River","Fire","Banana","Bat","Phone","Laptop","Robot"]
+noun=words_Array[0]
+fontFace = cv2.FONT_HERSHEY_SIMPLEX
+org=(12,245)
+fontScale = 1
+color = (0,0,0)
+lineType = cv2.LINE_4
+counter = 0
 
 dict = {}
 for i in range(1,len(imagesArray)+1):
@@ -112,7 +126,8 @@ def findLandmarks(img):
 	return total_Fingers,x1,y1,x2,y2
 
 def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
-	global displayImage,drawColor,canvas,canvas_weight,img_weight,drawingSound,eraserSound,selectingSound,X_Y_Points,xStart,yStart,soundStartTime_drawing,soundStartTime_eraser,soundDuration_drawing,soundDuration_eraser,soundDuration_selection
+	global displayImage,drawColor,canvas,canvas_weight,img_weight,drawingSound,eraserSound,selectingSound,X_Y_Points,xStart,yStart,soundStartTime_drawing,soundStartTime_eraser,soundDuration_drawing,soundDuration_eraser,soundDuration_selection,noun,counter
+	
 	if len(total_Fingers) != 0:			
 
 		# SELECTION MODE
@@ -178,7 +193,13 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 			else:
 				displayImage = imagesArray[0]
 
-				
+			if 200<=y2<=280:
+				if (10<=((x1+x2)//2)<=100):
+					if counter != len(words_Array):
+						noun = words_Array[counter]
+						counter = counter + 1
+					else:
+						counter = 0
 
 			cv2.circle(img,radius=20,center=((x1+x2)//2,(y1+y2)//2),color=drawColor,thickness=-1)
 
@@ -253,7 +274,7 @@ def selectAndDraw(img,total_Fingers,x1,y1,x2,y2):
 		selectingSound.stop()
 		
 
-	return displayImage
+	return displayImage,noun
 
 initializeSoundAttributes()
 button_bool = st.button("PAUSE WEB-CAM")
@@ -267,14 +288,23 @@ while True:
 		
 		# FIND HAND LANDMARKS
 		total_Fingers,x1,y1,x2,y2 = findLandmarks(img)
-		displayImage = selectAndDraw(img,total_Fingers,x1,y1,x2,y2)
+		displayImage,noun = selectAndDraw(img,total_Fingers,x1,y1,x2,y2)
 
 		# FIRST IMAGE TO BE DISPLAYED IS APPLIED
 		img[:60,0:640] = displayImage
 		blended = cv2.addWeighted(img[60:,0:640],img_weight, canvas[60:,0:640], canvas_weight, 10)
-		img[60:,0:640] = blended
+		img[60:,0:640] = blended	
+		
+
+		img_rect = cv2.rectangle(img,start_point,end_point,color=(0,0,0),thickness=5)
+		img_rect = cv2.rectangle(img,start_point,end_point,color=(172, 221, 222),thickness=-1)
+
+		
+		cv2.putText(img_rect, noun, org, fontFace, fontScale, color, lineType)
+
 		img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 		FRAME_WINDOW.image(img)
+
 
 		# if cv2.waitKey(1) & 0xFF == 32:
 		# 	break
